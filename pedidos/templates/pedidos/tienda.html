@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mojica Shoes - Tienda Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl font-black text-pink-600 tracking-wider">MOJICA SHOES 👟</h1>
+            
+            <!-- Buscador en tiempo real -->
+            <div class="w-full sm:w-96">
+                <input type="text" id="buscador" placeholder="Buscar por nombre, marca..." oninput="filtrarProductos()" class="w-full border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 shadow-sm">
+            </div>
+
+            <button onclick="toggleCart()" class="relative bg-pink-600 text-white px-5 py-2 rounded-full font-semibold shadow hover:bg-pink-700 transition flex items-center gap-2">
+                Carrito <span id="cart-count" class="bg-white text-pink-600 px-2 py-0.5 rounded-full text-xs font-bold">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Catálogo -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-gray-900">Catálogo Exclusivo</h2>
+            <p class="text-gray-500 mt-2">Haz clic en un calzado para ver fotos, tallas disponibles y detalles.</p>
+        </div>
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </main>
+
+    <!-- Modal de Detalle del Producto (Galería y Tallas) -->
+    <div id="detalle-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center p-5 border-b">
+                <h3 id="det-nombre" class="text-xl font-black text-gray-900"></h3>
+                <button onclick="cerrarDetalle()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-6">
+                <!-- Imagen Principal -->
+                <div class="w-full h-72 bg-gray-100 rounded-2xl overflow-hidden shadow-inner">
+                    <img id="det-img-principal" src="" alt="Calzado" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Miniaturas de la Galería -->
+                <div id="det-galeria" class="flex gap-3 overflow-x-auto pb-2"></div>
+
+                <!-- Info y Precios -->
+                <div>
+                    <span id="det-marca" class="text-xs font-bold text-pink-600 uppercase tracking-wider"></span>
+                    <p id="det-precio" class="text-2xl font-black text-gray-900 mt-1"></p>
+                    <p id="det-descripcion" class="text-sm text-gray-600 mt-2"></p>
+                </div>
+
+                <!-- Selector de Tallas -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Selecciona tu Talla:</label>
+                    <div id="det-tallas" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Selector de Colores -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Selecciona el Color:</label>
+                    <div id="det-colores" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+
+            <div class="p-5 border-t bg-gray-50 flex justify-end gap-3">
+                <button onclick="cerrarDetalle()" class="px-5 py-2.5 rounded-xl border font-semibold text-gray-600 hover:bg-gray-100">Cerrar</button>
+                <button onclick="agregarDesdeDetalle()" class="bg-pink-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-pink-700 shadow-md">Agregar al Carrito</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal del Carrito -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-end">
+        <div class="bg-white w-full max-w-md h-full shadow-2xl flex flex-col p-6">
+            <div class="flex justify-between items-center border-b pb-4">
+                <h3 class="text-xl font-bold">Tu Carrito de Compras</h3>
+                <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto py-4 space-y-4">
+                <p class="text-gray-500 text-center py-8">Tu carrito está vacío.</p>
+            </div>
+            <div class="border-t pt-4 space-y-3">
+                <div class="flex justify-between font-bold text-lg">
+                    <span>Total:</span>
+                    <span id="cart-total" class="text-pink-600">$0.00</span>
+                </div>
+                <input type="text" id="cliente-nombre" placeholder="Tu Nombre Completo" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <input type="text" id="cliente-telefono" placeholder="Tu Teléfono / WhatsApp" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <textarea id="cliente-direccion" placeholder="Dirección o Punto de Entrega" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"></textarea>
+                <button onclick="enviarPedido()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-green-700 transition">
+                    Confirmar Pedido por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let carrito = [];
+        let productosGlobal = [];
+        let productoSeleccionado = null;
+        let tallaSeleccionada = null;
+        let colorSeleccionado = null;
+        const API_URL = 'http://127.0.0.1:8000/api/';
+
+        async function cargarProductos() {
+            try {
+                let response = await fetch(`${API_URL}productos/`);
+                productosGlobal = await response.json();
+                mostrarProductos(productosGlobal);
+            } catch (error) { console.error(error); }
+        }
+
+        function mostrarProductos(lista) {
+            let grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            if (lista.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10">No se encontraron calzados.</p>`;
+                return;
+            }
+            lista.forEach(p => {
+                let imgPrincipal = (p.imagenes && p.imagenes.length > 0) ? p.imagenes[0].imagen : (p.imagen || p.imagen_url || 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500');
+                
+                grid.innerHTML += `
+                    <div onclick="abrirDetalle(${p.id})" class="bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col justify-between hover:shadow-md transition cursor-pointer">
+                        <img src="${imgPrincipal}" alt="${p.nombre}" class="w-full h-48 object-cover">
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <span class="text-xs font-bold text-pink-600 uppercase tracking-wider">${p.marca || ''}</span>
+                                <h3 class="font-bold text-gray-900 text-lg">${p.nombre}</h3>
+                            </div>
+                            <div class="mt-4 flex items-center justify-between">
+                                <span class="text-xl font-black text-gray-900">$${parseFloat(p.precio_venta).toFixed(2)}</span>
+                                <span class="text-xs bg-pink-50 text-pink-600 font-bold px-3 py-1.5 rounded-xl">Ver Detalles</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filtrarProductos() {
+            let query = document.getElementById('buscador').value.toLowerCase();
+            let filtrados = productosGlobal.filter(p => 
+                p.nombre.toLowerCase().includes(query) || (p.marca && p.marca.toLowerCase().includes(query))
+            );
+            mostrarProductos(filtrados);
+        }
+
+        function abrirDetalle(id) {
+            productoSeleccionado = productosGlobal.find(p => p.id === id);
+            if (!productoSeleccionado) return;
+
+            document.getElementById('det-nombre').innerText = productoSeleccionado.nombre;
+            document.getElementById('det-marca').innerText = productoSeleccionado.marca || '';
+            document.getElementById('det-precio').innerText = `$${parseFloat(productoSeleccionado.precio_venta).toFixed(2)}`;
+            document.getElementById('det-descripcion').innerText = productoSeleccionado.descripcion || 'Sin descripción disponible.';
+
+            // Galería de fotos
+            let imagenes = productoSeleccionado.imagenes || [];
+            let imgPrincipalElem = document.getElementById('det-img-principal');
+            let galeriaElem = document.getElementById('det-galeria');
+            galeriaElem.innerHTML = '';
+
+            let primerImg = imagenes.length > 0 ? imagenes[0].imagen : (productoSeleccionado.imagen || productoSeleccionado.imagen_url || 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500');
+            imgPrincipalElem.src = primerImg;
+
+            imagenes.forEach(img => {
+                galeriaElem.innerHTML += `<img src="${img.imagen}" onclick="document.getElementById('det-img-principal').src='${img.imagen}'" class="w-16 h-16 object-cover rounded-xl cursor-pointer border-2 hover:border-pink-500 transition">`;
+            });
+
+            // Tallas
+            tallaSeleccionada = null;
+            let tallasContainer = document.getElementById('det-tallas');
+            tallasContainer.innerHTML = '';
+            let listaTallas = productoSeleccionado.tallas || [];
+            if (listaTallas.length === 0) listaTallas = [productoSeleccionado.size || 'Única'];
+            
+            listaTallas.forEach(t => {
+                tallasContainer.innerHTML += `<button type="button" onclick="seleccionarTalla('${t}', this)" class="px-4 py-2 border rounded-xl font-bold text-sm hover:border-pink-600 transition">${t}</button>`;
+            });
+
+            // Colores
+            colorSeleccionado = null;
+            let coloresContainer = document.getElementById('det-colores');
+            coloresContainer.innerHTML = '';
+            let listaColores = productoSeleccionado.colores || [];
+            if (listaColores.length === 0) listaColores = [productoSeleccionado.color || 'Único'];
+
+            listaColores.forEach(c => {
+                coloresContainer.innerHTML += `<button type="button" onclick="seleccionarColor('${c}', this)" class="px-4 py-2 border rounded-xl font-bold text-sm hover:border-pink-600 transition">${c}</button>`;
+            });
+
+            document.getElementById('detalle-modal').classList.remove('hidden');
+        }
+
+        function seleccionarTalla(talla, btn) {
+            tallaSeleccionada = talla;
+            document.querySelectorAll('#det-tallas button').forEach(b => b.classList.remove('bg-pink-600', 'text-white'));
+            btn.classList.add('bg-pink-600', 'text-white');
+        }
+
+        function seleccionarColor(color, btn) {
+            colorSeleccionado = color;
+            document.querySelectorAll('#det-colores button').forEach(b => b.classList.remove('bg-pink-600', 'text-white'));
+            btn.classList.add('bg-pink-600', 'text-white');
+        }
+
+        function cerrarDetalle() { document.getElementById('detalle-modal').classList.add('hidden'); }
+
+        function agregarDesdeDetalle() {
+            if (!tallaSeleccionada || !colorSeleccionado) {
+                alert("Por favor selecciona una talla y un color.");
+                return;
+            }
+            let itemKey = `${productoSeleccionado.id}-${tallaSeleccionada}-${colorSeleccionado}`;
+            let item = carrito.find(i => i.key === itemKey);
+            if (item) {
+                item.cantidad++;
+            } else {
+                carrito.push({
+                    key: itemKey,
+                    id: productoSeleccionado.id,
+                    nombre: productoSeleccionado.nombre,
+                    precio: productoSeleccionado.precio_venta,
+                    talla: tallaSeleccionada,
+                    color: colorSeleccionado,
+                    cantidad: 1
+                });
+            }
+            actualizarCarritoUI();
+            cerrarDetalle();
+            alert("¡Calzado agregado al carrito!");
+        }
+
+        function toggleCart() { document.getElementById('cart-modal').classList.toggle('hidden'); }
+
+        function actualizarCarritoUI() {
+            let countSpan = document.getElementById('cart-count');
+            let itemsContainer = document.getElementById('cart-items');
+            let totalSpan = document.getElementById('cart-total');
+            countSpan.innerText = carrito.reduce((sum, i) => sum + i.cantidad, 0);
+
+            if (carrito.length === 0) {
+                itemsContainer.innerHTML = `<p class="text-gray-500 text-center py-8">Tu carrito está vacío.</p>`;
+                totalSpan.innerText = '$0.00';
+                return;
+            }
+
+            itemsContainer.innerHTML = '';
+            let totalGeneral = 0;
+            carrito.forEach((item, index) => {
+                let subtotal = item.precio * item.cantidad;
+                totalGeneral += subtotal;
+                itemsContainer.innerHTML += `
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <div>
+                            <h4 class="font-bold text-sm">${item.nombre}</h4>
+                            <p class="text-xs text-gray-500">Talla: ${item.talla} | Color: ${item.color} | $${item.precio} x ${item.cantidad}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-sm">$${subtotal.toFixed(2)}</span>
+                            <button onclick="carrito.splice(${index},1); actualizarCarritoUI();" class="text-red-500 font-bold">&times;</button>
+                        </div>
+                    </div>
+                `;
+            });
+            totalSpan.innerText = `$${totalGeneral.toFixed(2)}`;
+        }
+
+        async function enviarPedido() {
+            let nombre = document.getElementById('cliente-nombre').value.trim();
+            let telefono = document.getElementById('cliente-telefono').value.trim();
+            let direccion = document.getElementById('cliente-direccion').value.trim();
+
+            if (!nombre || !telefono || carrito.length === 0) {
+                alert("Completa tu nombre, teléfono y agrega productos al carrito.");
+                return;
+            }
+
+            let pedidoData = {
+                nombre_cliente: nombre,
+                telefono_cliente: telefono,
+                direccion_entrega: direccion,
+                detalles: carrito.map(i => ({ producto: i.id, cantidad: i.cantidad, precio_unitario: i.precio, costo_unitario: 0 }))
+            };
+
+            try {
+                let response = await fetch(`${API_URL}pedidos/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(pedidoData)
+                });
+
+                if (response.ok) {
+                    let mensaje = `✨ *NUEVO PEDIDO - MOJICA SHOES* ✨\n👤 *Cliente:* ${nombre}\n📱 *Tel:* ${telefono}\n📍 *Dir:* ${direccion}\n------------------------------\n`;
+                    carrito.forEach(i => { 
+                        mensaje += `• ${i.cantidad}x ${i.nombre} (Talla: ${i.talla}, Color: ${i.color}) - $${(i.precio * i.cantidad).toFixed(2)}\n`; 
+                    });
+                    mensaje += `------------------------------\n💰 *Total:* ${document.getElementById('cart-total').innerText}`;
+
+                    let urlWhatsApp = `https://wa.me/18090000000?text=${encodeURIComponent(mensaje)}`;
+                    alert("¡Pedido registrado con éxito!");
+                    window.open(urlWhatsApp, '_blank');
+                    carrito = [];
+                    actualizarCarritoUI();
+                    toggleCart();
+                } else { alert("Error al registrar el pedido."); }
+            } catch (error) { console.error(error); }
+        }
+
+        cargarProductos();
+    </script>
+</body>
+</html>
