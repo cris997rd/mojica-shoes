@@ -18,7 +18,7 @@ import {
   Calendar
 } from 'lucide-react';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = 'https://mojica-shoes.onrender.com/api';
 const TALLAS_DISPONIBLES = ["6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11"];
 
 export default function App() {
@@ -169,7 +169,7 @@ export default function App() {
 
   const abrirWhatsApp = (pedido) => {
     const total = calcularTotalPedido(pedido).toFixed(2);
-    const msj = `Hola *${pedido.nombre_cliente}*, de *Mójica Shoes* 👟.\nTu código de pedido/reembolso es: *${pedido.codigo_seguimiento}*.\nMonto: *$${total}* - Estado: *${pedido.estado}*.`;
+    const msj = `Hola *${pedido.nombre_cliente}*, de *Mójica Shoes* 👟.\nTu código de pedido/reembolso es: *${pedido.codigo_seguimiento}*.\nMonto: *$${total}*\nEstado: *${pedido.estado}*.`;
     window.open(`https://wa.me/${pedido.telefono_cliente.replace(/\D/g, '')}?text=${encodeURIComponent(msj)}`, '_blank');
   };
 
